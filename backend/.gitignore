@@ -1,0 +1,4 @@
+storage/
+.env
+pdf-reader-backend
+pdf-reader-backend.exe
