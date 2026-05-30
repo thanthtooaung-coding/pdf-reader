@@ -1,0 +1,20 @@
+---
+alwaysApply: true
+---
+
+# Strict Tailwind CSS Styling Rules
+- **No UI Libraries:** Do not use Shadcn, Radix, or any third-party UI components. Build everything using native HTML tags styled with Tailwind utilities.
+- **Design Token System:**
+  - **Colors:** Use `slate` or `zinc` for neutrals (e.g., `bg-slate-50` for app background, `text-slate-900` for primary text, `text-slate-500` for secondary text). Use `indigo` or `blue` for primary interactive actions.
+  - **Borders:** Use subtle dividers (`border border-slate-200/80`). Avoid harsh pure black or heavy dark borders.
+  - **Borders & Corners:** Default to `rounded-lg` for cards, buttons, and panels. Use `rounded-md` for small interactive items like badges or toolbar buttons.
+- **Interactive States & Transitions:**
+  - Every interactive element (`button`, `a`, custom clickable tab) MUST have a explicit `:hover` and `:focus-visible` state.
+  - Focus indicators must use `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`.
+  - Apply smooth transitions to interactive state changes: `transition-all duration-200 ease-in-out`.
+- **Layout & Scannability:**
+  - Prioritize dashboard readability with explicit padding layouts (typically `p-4` or `p-6`).
+  - Use Flexbox (`flex flex-col items-center gap-4`) and CSS Grid (`grid grid-cols-1 md:grid-cols-2 gap-6`) layout structures rather than absolute positioning unless creating overlays.
+  - Long paragraphs or generated summaries must be readable using standard tracking and line-heights (`text-base leading-relaxed tracking-normal text-slate-700`).
+- **Scrollbar Styling:**
+  - For long documents (PDF view, note logs), use thin, modern webkit scrollbar utilities (`scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300`).
