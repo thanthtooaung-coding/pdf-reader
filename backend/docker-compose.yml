@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pdfreader-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pdfreader
+      POSTGRES_PASSWORD: pdfreader
+      POSTGRES_DB: pdfreader
+    ports:
+      - "5432:5432"
+    volumes:
+      - pdfreader_pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: pdfreader-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdfreader-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://pdfreader:pdfreader@postgres:5432/pdfreader?sslmode=disable
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      DB_AUTO_MIGRATE: "true"
+      OTP_DEBUG_RETURN: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - pdfreader_storage:/app/storage
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  pdfreader_pg_data:
+  pdfreader_storage:

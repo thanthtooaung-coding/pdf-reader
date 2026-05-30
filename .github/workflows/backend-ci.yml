@@ -1,0 +1,72 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pdfreader
+          POSTGRES_PASSWORD: pdfreader
+          POSTGRES_DB: pdfreader_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pdfreader -d pdfreader_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://pdfreader:pdfreader@localhost:5432/pdfreader_test?sslmode=disable
+      REDIS_HOST: localhost
+      REDIS_PORT: "6379"
+      DB_AUTO_MIGRATE: "true"
+      OTP_DEBUG_RETURN: "true"
+      JWT_SECRET: ci-test-secret
+      SEED_DEFAULT_ADMIN: "true"
+      LOG_LEVEL: error
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: backend/go.sum
+
+      - name: Verify module
+        run: go mod verify
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Run API integration tests
+        run: go test ./tests/integration/... -v -count=1 -race -timeout 5m
