@@ -20,7 +20,7 @@ type ResendOTPRequest struct {
 
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email,max=255"`
-	Username string `json:"username" validate:"required,min=2,max=64"`
+	Username string `json:"username" validate:"omitempty,min=2,max=64"`
 	Password string `json:"password" validate:"required,min=8,max=72"`
 }
 

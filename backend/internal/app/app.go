@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
+	swagger "github.com/swaggo/fiber-swagger"
 	"gorm.io/gorm"
 
 	"github.com/thanthtooaung-coding/pdf-reader/backend/internal/config"
@@ -93,6 +94,8 @@ func Bootstrap(cfg *config.Config) (*Application, error) {
 	aiJobSvc := service.NewAIJobService(log, aiJobRepo, fileRepo, workspaceRepo, store, openaiClient)
 
 	handlers := routes.Handlers{
+		Health:    handler.NewHealthHandler(),
+		Swagger:   swagger.WrapHandler,
 		Auth:      handler.NewAuthHandler(authSvc),
 		User:      handler.NewUserHandler(userSvc),
 		Workspace: handler.NewWorkspaceHandler(workspaceSvc),

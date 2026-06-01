@@ -55,7 +55,21 @@ docker compose up --build
 ```
 
 API: `http://localhost:8080`  
-Health: `GET /healthz`
+Health: `GET /healthz`  
+Swagger UI: `http://localhost:8080/swagger/index.html`
+
+## Swagger / OpenAPI
+
+Interactive API docs are served at `/swagger/index.html`.
+
+Regenerate after changing handler annotations:
+
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+make swagger
+```
+
+The `docs/` folder is committed and also regenerated during Docker builds.
 
 ## Quick start (local)
 

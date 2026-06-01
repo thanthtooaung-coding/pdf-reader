@@ -13,8 +13,21 @@ import (
 
 	"github.com/thanthtooaung-coding/pdf-reader/backend/internal/app"
 	"github.com/thanthtooaung-coding/pdf-reader/backend/internal/config"
+
+	_ "github.com/thanthtooaung-coding/pdf-reader/backend/docs"
 )
 
+// @title           PDF Reader API
+// @version         1.0
+// @description     Monolithic PDF Reader backend — auth, workspaces, PDF upload, comments, and AI jobs.
+// @host            localhost:8080
+// @BasePath        /
+// @schemes         http https
+//
+// @securityDefinitions.apikey  BearerAuth
+// @in                          header
+// @name                        Authorization
+// @description                 JWT access token. Format: Bearer {token}
 func main() {
 	cfg := config.Load()
 	log := newLogger(cfg.LogLevel)

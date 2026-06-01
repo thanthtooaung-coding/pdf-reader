@@ -1,0 +1,961 @@
+basePath: /
+definitions:
+  request.CreateAIJobRequest:
+    properties:
+      file_id:
+        type: string
+      input:
+        maxLength: 10000
+        type: string
+      type:
+        enum:
+        - TRANSLATE
+        - SUMMARIZE
+        - COMMENT
+        type: string
+    required:
+    - file_id
+    - type
+    type: object
+  request.CreateCommentRequest:
+    properties:
+      message:
+        maxLength: 5000
+        minLength: 1
+        type: string
+    required:
+    - message
+    type: object
+  request.CreateWorkspaceRequest:
+    properties:
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  request.LoginRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      username:
+        maxLength: 64
+        minLength: 2
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  request.RegisterRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      fullname:
+        maxLength: 128
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      username:
+        maxLength: 64
+        minLength: 2
+        type: string
+    required:
+    - email
+    - fullname
+    - password
+    - username
+    type: object
+  request.ResendOTPRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+    required:
+    - email
+    type: object
+  request.VerifyOTPRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      otp:
+        type: string
+    required:
+    - email
+    - otp
+    type: object
+  response.AIJobEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/response.AIJobResponse'
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.AIJobListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.AIJobResponse'
+        type: array
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.AIJobResponse:
+    properties:
+      created_at:
+        type: string
+      duration_ms:
+        type: integer
+      file_id:
+        type: string
+      id:
+        type: string
+      input:
+        type: string
+      output:
+        type: string
+      retry_count:
+        type: integer
+      status:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      workspace_id:
+        type: string
+    type: object
+  response.AuthEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/response.AuthResponse'
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.AuthResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      token_type:
+        type: string
+      user:
+        $ref: '#/definitions/response.UserResponse'
+    type: object
+  response.CommentEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/response.CommentResponse'
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.CommentListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.CommentResponse'
+        type: array
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.CommentResponse:
+    properties:
+      created_at:
+        type: string
+      file_id:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  response.ErrorEnvelope:
+    properties:
+      error:
+        example: validation failed
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  response.FileEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/response.FileResponse'
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.FileListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.FileResponse'
+        type: array
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.FileResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      original_file_name:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+      user_id:
+        type: string
+      workspace_id:
+        type: string
+    type: object
+  response.HealthResponse:
+    properties:
+      service:
+        example: pdf-reader-backend
+        type: string
+      status:
+        example: ok
+        type: string
+    type: object
+  response.OTPEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/response.OTPSentResponse'
+      message:
+        example: otp_sent
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.OTPSentResponse:
+    properties:
+      expires_in_seconds:
+        type: integer
+      message:
+        type: string
+      otp:
+        type: string
+    type: object
+  response.PageMeta:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  response.UserEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/response.UserResponse'
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: string
+      is_enable:
+        type: boolean
+      role_code:
+        type: string
+      role_id:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  response.WorkspaceEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/response.WorkspaceResponse'
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.WorkspaceListEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/response.WorkspacePage'
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.WorkspacePage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/response.WorkspaceResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/response.PageMeta'
+    type: object
+  response.WorkspaceResponse:
+    properties:
+      created_at:
+        type: string
+      file_count:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Monolithic PDF Reader backend — auth, workspaces, PDF upload, comments,
+    and AI jobs.
+  title: PDF Reader API
+  version: "1.0"
+paths:
+  /api/v1/ai-jobs:
+    post:
+      consumes:
+      - application/json
+      description: TRANSLATE and SUMMARIZE use OpenAI when OPENAI_API_KEY is configured.
+      parameters:
+      - description: AI job payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateAIJobRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.AIJobEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Create AI job
+      tags:
+      - ai-jobs
+  /api/v1/ai-jobs/{id}:
+    get:
+      parameters:
+      - description: AI job ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.AIJobEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get AI job
+      tags:
+      - ai-jobs
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.OTPEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      summary: Request login OTP
+      tags:
+      - auth
+  /api/v1/auth/login/verify:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: OTP verification payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.AuthEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      summary: Verify login OTP
+      tags:
+      - auth
+  /api/v1/auth/register/request:
+    post:
+      consumes:
+      - application/json
+      description: Validates signup fields and sends a one-time password to the email
+        address.
+      parameters:
+      - description: Registration payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.OTPEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      summary: Request registration OTP
+      tags:
+      - auth
+  /api/v1/auth/register/resend:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email address
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.ResendOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.OTPEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      summary: Resend registration OTP
+      tags:
+      - auth
+  /api/v1/auth/register/verify:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: OTP verification payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.AuthEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      summary: Verify registration OTP
+      tags:
+      - auth
+  /api/v1/files/{fileId}/comments:
+    get:
+      parameters:
+      - description: File ID (UUID)
+        in: path
+        name: fileId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CommentListEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List comments
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: File ID (UUID)
+        in: path
+        name: fileId
+        required: true
+        type: string
+      - description: Comment message
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.CommentEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Create comment
+      tags:
+      - comments
+  /api/v1/files/{id}:
+    get:
+      parameters:
+      - description: File ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FileEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get file metadata
+      tags:
+      - files
+  /api/v1/files/{id}/download:
+    get:
+      parameters:
+      - description: File ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Download PDF
+      tags:
+      - files
+  /api/v1/users/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UserEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - users
+  /api/v1/workspaces:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WorkspaceListEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List workspaces
+      tags:
+      - workspaces
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Workspace name
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateWorkspaceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.WorkspaceEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Create workspace
+      tags:
+      - workspaces
+  /api/v1/workspaces/{id}:
+    get:
+      parameters:
+      - description: Workspace ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WorkspaceEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get workspace
+      tags:
+      - workspaces
+  /api/v1/workspaces/{workspaceId}/ai-jobs:
+    get:
+      parameters:
+      - description: Workspace ID (UUID)
+        in: path
+        name: workspaceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.AIJobListEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List workspace AI jobs
+      tags:
+      - ai-jobs
+  /api/v1/workspaces/{workspaceId}/files:
+    get:
+      parameters:
+      - description: Workspace ID (UUID)
+        in: path
+        name: workspaceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FileListEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List workspace files
+      tags:
+      - files
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Workspace ID (UUID)
+        in: path
+        name: workspaceId
+        required: true
+        type: string
+      - description: PDF file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.FileEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Upload PDF
+      tags:
+      - files
+  /healthz:
+    get:
+      description: Returns ok when the API process is running.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.HealthResponse'
+      summary: Health check
+      tags:
+      - health
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: 'JWT access token. Format: Bearer {token}'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

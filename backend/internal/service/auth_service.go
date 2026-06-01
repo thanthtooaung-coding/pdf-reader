@@ -212,7 +212,7 @@ func (s *authServiceImpl) LoginRequest(ctx context.Context, req request.LoginReq
 	if err != nil || u == nil || !u.IsEnable {
 		return nil, ErrInvalidCredentials
 	}
-	if !strings.EqualFold(u.Username, username) {
+	if username != "" && !strings.EqualFold(u.Username, username) {
 		return nil, ErrInvalidCredentials
 	}
 	if err := utils.CheckPassword(req.Password, u.Password); err != nil {

@@ -251,7 +251,6 @@ func TestAuthAPIs(t *testing.T) {
 	t.Run("login request", func(t *testing.T) {
 		status, env := doJSON(t, http.MethodPost, "/api/v1/auth/login", map[string]string{
 			"email":    email,
-			"username": username,
 			"password": password,
 		}, "")
 		if status != http.StatusOK || !env.Success {
@@ -262,7 +261,6 @@ func TestAuthAPIs(t *testing.T) {
 	t.Run("login verify", func(t *testing.T) {
 		_, env := doJSON(t, http.MethodPost, "/api/v1/auth/login", map[string]string{
 			"email":    email,
-			"username": username,
 			"password": password,
 		}, "")
 		otpResp := decodeData[response.OTPSentResponse](t, env.Data)
@@ -556,7 +554,6 @@ func TestAuthValidationErrors(t *testing.T) {
 	t.Run("login invalid credentials", func(t *testing.T) {
 		status, env := doJSON(t, http.MethodPost, "/api/v1/auth/login", map[string]string{
 			"email":    uniqueEmail("nouser"),
-			"username": "nobody",
 			"password": "Password123!",
 		}, "")
 		if status != http.StatusUnauthorized || env.Success {

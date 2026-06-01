@@ -9,7 +9,9 @@ import (
 )
 
 type Handlers struct {
-	Auth       *handler.AuthHandler
+	Health    *handler.HealthHandler
+	Swagger   fiber.Handler
+	Auth      *handler.AuthHandler
 	User       *handler.UserHandler
 	Workspace  *handler.WorkspaceHandler
 	File       *handler.FileHandler
@@ -18,9 +20,9 @@ type Handlers struct {
 }
 
 func Register(app *fiber.App, cfg *config.Config, h Handlers) {
-	app.Get("/healthz", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{"status": "ok", "service": "pdf-reader-backend"})
-	})
+	app.Get("/healthz", h.Health.HealthCheck)
+
+	app.Get("/swagger/*", h.Swagger)
 
 	api := app.Group("/api/v1")
 
