@@ -6,8 +6,8 @@ Schema and flows are derived from [documentation/ERD.jpg](../documentation/ERD.j
 
 ## Stack
 
-- Go 1.22, [Fiber v2](https://gofiber.io)
-- [GORM v2](https://gorm.io) on PostgreSQL 16
+- Go 1.24, [Fiber v2](https://gofiber.io)
+- [GORM v2](https://gorm.io) on PostgreSQL (NeonDB)
 - Redis for OTP (register + login)
 - Local filesystem storage for uploaded PDFs
 
@@ -17,7 +17,7 @@ Schema and flows are derived from [documentation/ERD.jpg](../documentation/ERD.j
 backend/
 ├── cmd/main.go                 # Fiber bootstrap + graceful shutdown
 ├── db/init.sql                 # PostgreSQL schema (manual init option)
-├── docker-compose.yml          # Postgres + Redis + backend
+├── docker-compose.yml          # Redis + backend (DB via NeonDB in .env)
 ├── .env.example
 └── internal/
     ├── config/
@@ -40,15 +40,17 @@ backend/
 
 ## Prerequisites
 
-- Go **1.22+**
-- Docker + Docker Compose (optional)
-- PostgreSQL 16 and Redis 7 (if not using Docker)
+- Go **1.24+**
+- Docker + Docker Compose (optional, runs Redis + backend)
+- [NeonDB](https://neon.tech) (or any PostgreSQL) — set `DATABASE_URL` in `.env`
+- Redis 7 (local or via docker compose)
 
 ## Quick start (Docker)
 
 ```bash
 cd backend
 cp .env.example .env
+# Set DATABASE_URL to your NeonDB connection string in .env
 docker compose up --build
 ```
 
@@ -60,7 +62,7 @@ Health: `GET /healthz`
 ```bash
 cd backend
 cp .env.example .env
-# Start Postgres + Redis (or use docker compose up postgres redis)
+# Set DATABASE_URL in .env (NeonDB). Start Redis locally or: docker compose up redis
 
 go mod tidy
 go run ./cmd
@@ -105,19 +107,33 @@ When `SEED_DEFAULT_ADMIN=true`, boot seeds roles (`ADMIN`, `USER`) and an admin 
 
 ## AI jobs
 
-AI job endpoints create background tasks with stub output. Wire a real LLM provider inside `internal/service/ai_job_service.go` → `processJob`.
+`TRANSLATE` and `SUMMARIZE` jobs extract text from the uploaded PDF and send it to the OpenAI Chat Completions API.
+
+Configure in `.env`:
+
+```env
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+# optional, for Azure OpenAI or compatible gateways:
+OPENAI_BASE_URL=https://api.openai.com/v1
+```
+
+- **TRANSLATE** — set `input` to the target language (e.g. `my`, `English`, `Japanese`).
+- **SUMMARIZE** — `input` is optional.
+
+If `OPENAI_API_KEY` is not set, translate/summarize fall back to stub output (used in CI). `COMMENT` jobs still use a local stub.
 
 ## Tests
 
 API integration tests live in `tests/integration/` and cover every route (auth, users, workspaces, files, comments, AI jobs).
 
-They require PostgreSQL and Redis. CI runs them automatically via [`.github/workflows/backend-ci.yml`](../.github/workflows/backend-ci.yml).
+They require PostgreSQL and Redis. CI uses a local Postgres service container; for local dev set `DATABASE_URL` to your NeonDB string in `.env`.
 
-Local run (with Postgres + Redis available):
+Local run:
 
 ```bash
 cd backend
-export DATABASE_URL=postgres://pdfreader:pdfreader@localhost:5432/pdfreader?sslmode=disable
+# DATABASE_URL from .env (NeonDB)
 export REDIS_HOST=localhost
 export REDIS_PORT=6379
 export DB_AUTO_MIGRATE=true

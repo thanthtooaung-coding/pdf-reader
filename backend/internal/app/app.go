@@ -22,6 +22,7 @@ import (
 	"github.com/thanthtooaung-coding/pdf-reader/backend/internal/routes"
 	"github.com/thanthtooaung-coding/pdf-reader/backend/internal/service"
 	"github.com/thanthtooaung-coding/pdf-reader/backend/pkg/email"
+	"github.com/thanthtooaung-coding/pdf-reader/backend/pkg/openai"
 	"github.com/thanthtooaung-coding/pdf-reader/backend/pkg/storage"
 )
 
@@ -84,7 +85,12 @@ func Bootstrap(cfg *config.Config) (*Application, error) {
 	workspaceSvc := service.NewWorkspaceService(log, workspaceRepo, fileRepo)
 	fileSvc := service.NewFileService(log, fileRepo, workspaceRepo, store)
 	commentSvc := service.NewCommentService(log, commentRepo, fileRepo)
-	aiJobSvc := service.NewAIJobService(log, aiJobRepo, fileRepo, workspaceRepo)
+	openaiClient := openai.NewClient(openai.Config{
+		APIKey:  cfg.OpenAIAPIKey,
+		Model:   cfg.OpenAIModel,
+		BaseURL: cfg.OpenAIBaseURL,
+	})
+	aiJobSvc := service.NewAIJobService(log, aiJobRepo, fileRepo, workspaceRepo, store, openaiClient)
 
 	handlers := routes.Handlers{
 		Auth:      handler.NewAuthHandler(authSvc),

@@ -1,9 +1,12 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -14,7 +17,12 @@ import (
 	"github.com/thanthtooaung-coding/pdf-reader/backend/internal/repository"
 	"github.com/thanthtooaung-coding/pdf-reader/backend/internal/request"
 	"github.com/thanthtooaung-coding/pdf-reader/backend/internal/response"
+	"github.com/thanthtooaung-coding/pdf-reader/backend/pkg/openai"
+	pdfextract "github.com/thanthtooaung-coding/pdf-reader/backend/pkg/pdf"
+	"github.com/thanthtooaung-coding/pdf-reader/backend/pkg/storage"
 )
+
+const maxDocumentChars = 12000
 
 var ErrAIJobNotFound = errors.New("ai job not found")
 
@@ -29,6 +37,8 @@ type aiJobServiceImpl struct {
 	jobs       repository.AIJobRepository
 	files      repository.FileRepository
 	workspaces repository.WorkspaceRepository
+	storage    *storage.LocalStorage
+	openai     openai.Client
 }
 
 func NewAIJobService(
@@ -36,9 +46,16 @@ func NewAIJobService(
 	jobs repository.AIJobRepository,
 	files repository.FileRepository,
 	workspaces repository.WorkspaceRepository,
+	store *storage.LocalStorage,
+	openaiClient openai.Client,
 ) AIJobService {
 	return &aiJobServiceImpl{
-		logger: logger, jobs: jobs, files: files, workspaces: workspaces,
+		logger:     logger,
+		jobs:       jobs,
+		files:      files,
+		workspaces: workspaces,
+		storage:    store,
+		openai:     openaiClient,
 	}
 }
 
@@ -114,6 +131,8 @@ func (s *aiJobServiceImpl) ListByWorkspace(userID, workspaceID uuid.UUID) ([]res
 
 func (s *aiJobServiceImpl) processJob(jobID uuid.UUID) {
 	start := time.Now()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
 
 	job, err := s.jobs.GetByID(jobID)
 	if err != nil {
@@ -123,29 +142,84 @@ func (s *aiJobServiceImpl) processJob(jobID uuid.UUID) {
 	job.Status = models.AIJobStatusProcessing
 	_ = s.jobs.Update(job)
 
-	time.Sleep(500 * time.Millisecond)
+	output, err := s.runJob(ctx, job)
+	job.Duration = time.Since(start).Milliseconds()
 
-	var output string
-	switch job.Type {
-	case models.AIJobTypeTranslate:
-		lang := job.Input
-		if lang == "" {
-			lang = "en"
-		}
-		output = fmt.Sprintf("[stub] Translated document to %s. Connect an AI provider to replace this output.", lang)
-	case models.AIJobTypeSummarize:
-		output = "[stub] Summary of the PDF content. Connect an AI provider to replace this output."
-	case models.AIJobTypeComment:
-		output = "[stub] AI-generated commentary on the document. Connect an AI provider to replace this output."
-	default:
+	if err != nil {
+		s.logger.WithError(err).WithField("job_id", jobID).Error("ai job failed")
 		job.Status = models.AIJobStatusFailed
-		job.Output = "unsupported job type"
+		job.Output = err.Error()
 		_ = s.jobs.Update(job)
 		return
 	}
 
 	job.Status = models.AIJobStatusCompleted
 	job.Output = output
-	job.Duration = time.Since(start).Milliseconds()
 	_ = s.jobs.Update(job)
+}
+
+func (s *aiJobServiceImpl) runJob(ctx context.Context, job *models.AIJob) (string, error) {
+	switch job.Type {
+	case models.AIJobTypeTranslate, models.AIJobTypeSummarize:
+		return s.runOpenAIJob(ctx, job)
+	case models.AIJobTypeComment:
+		return "[stub] AI-generated commentary on the document.", nil
+	default:
+		return "", fmt.Errorf("unsupported job type")
+	}
+}
+
+func (s *aiJobServiceImpl) runOpenAIJob(ctx context.Context, job *models.AIJob) (string, error) {
+	documentText, err := s.loadDocumentText(job)
+	if err != nil {
+		if !s.openai.Enabled() {
+			return s.stubOutput(job)
+		}
+		return "", err
+	}
+
+	documentText = truncateText(documentText, maxDocumentChars)
+
+	switch job.Type {
+	case models.AIJobTypeSummarize:
+		return s.openai.Summarize(ctx, documentText)
+	case models.AIJobTypeTranslate:
+		return s.openai.Translate(ctx, documentText, job.Input)
+	default:
+		return "", fmt.Errorf("unsupported job type")
+	}
+}
+
+func (s *aiJobServiceImpl) loadDocumentText(job *models.AIJob) (string, error) {
+	f, err := s.files.GetByID(job.FileID)
+	if err != nil {
+		return "", fmt.Errorf("load file: %w", err)
+	}
+
+	path, err := s.storage.Open(f.UserID, f.Name)
+	if err != nil {
+		return "", fmt.Errorf("open stored pdf: %w", err)
+	}
+
+	return pdfextract.ExtractText(path)
+}
+
+func (s *aiJobServiceImpl) stubOutput(job *models.AIJob) (string, error) {
+	switch job.Type {
+	case models.AIJobTypeSummarize:
+		return s.openai.Summarize(context.Background(), "")
+	case models.AIJobTypeTranslate:
+		return s.openai.Translate(context.Background(), "", job.Input)
+	default:
+		return "", fmt.Errorf("unsupported job type")
+	}
+}
+
+func truncateText(text string, maxChars int) string {
+	if maxChars <= 0 || utf8.RuneCountInString(text) <= maxChars {
+		return text
+	}
+
+	runes := []rune(text)
+	return strings.TrimSpace(string(runes[:maxChars])) + "\n\n[truncated]"
 }

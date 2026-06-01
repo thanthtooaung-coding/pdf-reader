@@ -44,6 +44,10 @@ type Config struct {
 	StoragePath string
 	MaxUploadMB int
 
+	OpenAIAPIKey  string
+	OpenAIModel   string
+	OpenAIBaseURL string
+
 	CORSAllowOrigins string
 }
 
@@ -86,6 +90,10 @@ func Load() *Config {
 
 		StoragePath: getEnv("STORAGE_PATH", "./storage"),
 		MaxUploadMB: getEnvInt("MAX_UPLOAD_MB", 25),
+
+		OpenAIAPIKey:  getEnv("OPENAI_API_KEY", ""),
+		OpenAIModel:   getEnv("OPENAI_MODEL", "gpt-4o-mini"),
+		OpenAIBaseURL: getEnv("OPENAI_BASE_URL", ""),
 
 		CORSAllowOrigins: getEnv("CORS_ALLOW_ORIGINS", "*"),
 	}
